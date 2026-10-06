@@ -1,0 +1,12 @@
+# Ejecutables compilados
+header-shield
+header-shield.exe
+*-mac-*
+
+# Archivos de entorno / IDEs
+.vscode/
+.idea/
+*.swp
+
+# Binarios de prueba o logs
+*.log
