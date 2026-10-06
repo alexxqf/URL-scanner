@@ -1,52 +1,34 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
-	"os"
-
-	"header-shield/pkg/scanner"
+	"net/http"
+	// importa tus otros paquetes (net, crypto/tls, etc.)
 )
 
+//go:embed web/*
+var webFS embed.FS
+
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Uso: go run main.go <dominio>")
-		fmt.Println("Ejemplo: go run main.go github.com")
-		os.Exit(1)
-	}
-
-	target := os.Args[1]
-	fmt.Printf("🔍 Escaneando objetivo: %s...\n\n", target)
-
-	// 1. Analizar Headers
-	headers, server, err := scanner.CheckHeaders(target)
+	// Extraer el subdirectorio "web" para servir el index.html
+	contentStatic, err := fs.Sub(webFS, "web")
 	if err != nil {
-		log.Fatalf("❌ Error en el escaneo de cabeceras: %v", err)
+		log.Fatal(err)
 	}
 
-	// 2. Analizar SSL
-	ssl := scanner.CheckSSL(target)
+	// Rutas HTTP
+	http.Handle("/", http.FileServer(http.FS(contentStatic)))
+	http.HandleFunc("/api/scan", handleScan) // Tu función que realiza el escaneo
 
-	// 3. Imprimir reporte por consola
-	fmt.Println("======== CABECERAS DE SEGURIDAD ========")
-	for _, h := range headers {
-		if h.Present {
-			fmt.Printf("  [✅ PRESENTE]  %-28s: %s\n", h.Name, h.Value)
-		} else {
-			fmt.Printf("  [❌ FALTANTE]  %-28s (Severidad: %s)\n", h.Name, h.Severity)
-		}
+	fmt.Println("🚀 Servidor iniciado en http://localhost:8080")
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("Error al iniciar el servidor: %v", err)
 	}
+}
 
-	if server != "" {
-		fmt.Printf("\n⚠️  Divulgación de Servidor: Server = %s\n", server)
-	}
-
-	fmt.Println("\n======== ESTADO DEL CERTIFICADO SSL/TLS ========")
-	if ssl.Valid {
-		fmt.Printf("  ✅ Certificado Válido\n")
-		fmt.Printf("  Emisor: %s\n", ssl.Issuer)
-		fmt.Printf("  Expiración: %s (%d días restantes)\n", ssl.ExpirationDate.Format("2006-01-02"), ssl.DaysRemaining)
-	} else {
-		fmt.Printf("  ❌ Error SSL: %s\n", ssl.Error)
-	}
+func handleScan(w http.ResponseWriter, r *http.Request) {
+	// Aquí va la lógica de tu escáner que devuelve el JSON
 }
