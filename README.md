@@ -21,3 +21,7 @@ Tener instalado [Go](https://go.dev/) (v1.20 o superior).
 ### Ejecutar directamente
 ```bash
 go run main.go github.com
+
+## ⚠️ Exención de Responsabilidad / Disclaimer
+
+Esta herramienta ha sido desarrollada exclusivamente con fines educativos y de auditoría de seguridad preventiva. El uso de esta herramienta contra objetivos sin autorización previa puede violar las leyes aplicables. El desarrollador no se hace responsable del uso indebido o los daños causados por esta aplicación.
